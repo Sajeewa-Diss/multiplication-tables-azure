@@ -7,7 +7,7 @@ The static webpage index.html links to three Azure resources which are each open
 2. A collection of Azure C-sharp functions opened using Visual Studio Community Edition 2017 from a solution file in folder AzureMultiTableCsFuncs.
 3. An Azure C-sharp Wcf service opened using Visual Studio Community Edition 2017 from a solution file in folder AzureMultiTablesWcfSvc01.
 
-To enable the Ajax calls, CORS settings must be modified within Azure. All the Js and Cs functions are placed in a single Function App in Azure from which the CORS settings for allowed origins points to out Github Pages address. This can be set manually.
+To enable the Ajax calls, CORS settings must be modified within Azure. All the Js and Cs functions are placed in a single Function App in Azure from which the CORS settings for allowed origins points to our Github Pages address. This can be set manually.
 
 The CORS settings for the app service containing out WCF service can be set in powershell using the command below. The resource group param, app name param and allowed origin website param must be modified accordingly: 
 
