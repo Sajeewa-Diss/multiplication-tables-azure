@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <script type="text/javascript" src="sharedscript.js"></script>
 
     <style>
         * {
@@ -351,12 +352,12 @@
                             a simple grid display.
                         </p>
                         <p>
-                            <span><a href="https://github.com/Sajeewa-Dissa/multiplication-tables-json" target="_blank">GitHub</a> the source code for this project is available here.</span><br />
-                            <span><a href="https://sajeewa-dissa.github.io/multiplication-tables-js/index.html">JavaScript</a> the same functionality found here, but uses client-side JavaScript only.</span><br />
+                            <span><a href="https://github.com/Sajeewa-Dissa/multiplication-tables-azure" target="_blank">GitHub</a> the source code for this project is available here.</span><br />
+                            <span><a href="https://sajeewa-dissa.github.io/multiplication-tables-js/index.html">JavaScript</a> the same functionality found here, but uses (more responsive) client-side JavaScript only.</span><br />
                             <span><a href="https://www.youtube.com/watch?v=qhbuKbxJsk8" target="_blank">YouTube Mathologer</a> the linked YouTube video was the inspiration for this webpage.</span><br />
                         </p>
                         <div>
-                            <span class="subheading">Settings:</span>
+                            <label class="subheading">Settings:</label>
                         </div>
                     </section>
                     <div class="buttoncontainer">
@@ -393,7 +394,7 @@
                         <div class="buttonsimcontainer">
                             <!--<input type="button" id="testBut" class="blueButton" value="Test Azure" />-->
                             <div class="blueButtonSimulator">
-                                <a id="linktester" href="http://localhost:55083/AzureTester.html">Test Azure</a>
+                                <a id="linktester" href="AzureTester.html">Test Azure</a>
                             </div>
                         </div>
                         <div>
@@ -434,7 +435,7 @@
             </div>
 
             <footer class="footer">
-                <p>&#169;<small> Copyright 2019 Sajeewa Dissanayake</small></p>
+                <p>&#169;<small>Copyright 2019 Sajeewa Dissanayake</small></p>
             </footer>
         </div>
 
@@ -452,27 +453,35 @@
             var radiocs = document.getElementById("cs");
             var radiows = document.getElementById("ws");
             var anchor = document.getElementById("linktester");
+
             //define circle centre, radius and other initial values
-            var centreX = 275;
-            var centreY = 275;
             var coords = [];
             var matrix = [];
             var multiple = 1;
+            var mustCallCreateCoords; // boolean to decide on RPC call
+            var mustCallCreateMatrix;
             var cumulativeCoordsRPC = 0
             var cumulativeMatrixRPC = 0
             var prevModulo = 0;
             var prevRadius = 0;
             var prevMultiplier = 0;
-            var strstatusmsg = "Methods not yet called.";
-            statusmsg.innerHTML = strstatusmsg;
-            var returnStatus = 0;
+            var strstatusmsg = "";
+            var strerrormsg = "";
+            var initialstatusmsg = "Please note that remote calls have been limited to five sets per sec.";
+            var initialRadius = slider3.value;
+            var toggleBut = document.getElementById("toggleBut");
+            var lasttimedrawcalled = 0;
+            var playingslider = false;
+
+            statusmsg.innerHTML = initialstatusmsg;
             output1.innerText = slider1.value;
             output2.innerText = slider2.value;
             output3.innerText = slider3.value;
-            var initialRadius = slider3.value;
-            var toggleBut = document.getElementById("toggleBut");
-            var intervalId;
+
             toggleBut.addEventListener("click", Start);
+
+            //#region basic functionailty copied from related pure JavaScript demo project 
+
             anchor.addEventListener('click', function (event) {
                 // Stop the link from redirecting
                 event.preventDefault();
@@ -480,22 +489,20 @@
                 // Redirect instead with JavaScript
                 window.location.href = anchor.href + queryString;
             }, false);
-            slider1.oninput = function () {
-                multiple = Number(this.value);       // save this global variable for autoplay restart.
-                output1.innerText = this.value;
-                drawResults(this.value);
-            }
-            slider2.oninput = function () {
-                output2.innerText = this.value;
-                drawResults(this.value);
-            }
-            slider3.oninput = function () {
-                output3.innerText = this.value;
-                drawResults(this.value);
-            }
+
+            slider1.oninput = function () { handleSliderUpdate(this, output1); }
+            slider2.oninput = function () { handleSliderUpdate(this, output2); }
+            slider3.oninput = function () { handleSliderUpdate(this, output3); }
+
+            slider1.onchange = function () { handleSliderUpdateNow(this, output1); }
+            slider2.onchange = function () { handleSliderUpdateNow(this, output2); }
+            slider3.onchange = function () { handleSliderUpdateNow(this, output3); }
+
             //draw circle (outline only) using initial values above.
-            drawCircle(centreX, centreY, initialRadius);
-            function drawCircle(x0, y0, radius) {
+            drawHollowCircle(centreX, centreY, initialRadius);
+
+            function drawHollowCircle(x0, y0, radius) {
+                console.log("drawing hollow circle ");
                 ctx.lineWidth = "1";
                 ctx.strokeStyle = "lightgrey";
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -504,67 +511,196 @@
                 ctx.stroke();
                 ctx.closePath();
             }
+
             //reset slider and circle on page refresh
             function setOnRefresh() {
                 resetControlsToStart();
             }
+
+            function resetControlsToStart() {
+                playingslider = false;
+                toggleBut.removeEventListener("click", Stop);
+                toggleBut.addEventListener("click", Start);
+                toggleBut.value = "Autoplay";
+
+                multiple = 1;
+                slider1.value = multiple;
+                output1.innerText = multiple;
+                output2.innerText = slider2.value;
+                output3.innerText = slider3.value;
+                var radius = output3.innerText;
+                drawHollowCircle(centreX, centreY, radius); //draw an empty circle only.
+                //fadeOut(); //??
+
+                if (document.querySelector('input[name="rpctype"]:checked') == null) { //make sure a default RPC method is selected.
+                    radiojs.checked = true; //set this by default.
+                }
+
+                //show the initial info screen display message only on page refresh. Otherwise nothing.
+                if (document.querySelector("span#statusmsg").firstChild.nodeValue != initialstatusmsg) {
+                    statusmsg.innerHTML = "";
+                }
+                //remove any global error messages
+                strerrormsg = "";
+            }
+
+            function handleSliderUpdate(slider, control) {
+                if (slider.id == "myRange1") {             // if multiplier being changed
+                    multiple = Number(slider.value);       // save this global variable for autoplay restart.
+                }
+                control.innerText = slider.value;
+                // Call for drawing of circle but not immediately (higher priority event handlers exist).
+                drawResults();
+            }
+
+            //#endregion
+
+            function handleSliderUpdateNow(slider, control) {
+                if (slider.id == "myRange1") {             // if multiplier being changed
+                    multiple = Number(slider.value);       // save this global variable for autoplay restart.
+                }
+                control.innerText = slider.value;
+                // Always call for immediate drawing of circle on slider change events (unless in autoplay mode).
+                if (playingslider) {
+                    drawResults();
+                } else {
+                    drawResultsNow();
+                }
+            }
+
+            //a wrapper function to limit the number of RPC calls per second.
+            //draw result immediately, but if previous call was less than 200ms ago, then do nothing.
             function drawResults() {
+                //if autoplay is on, let it handle drawing of circles instead.
+                if (playingslider) {
+                    return;
+                }
+
+                var d = new Date();
+                var timesinceprevcall = d.getTime() - lasttimedrawcalled;
+
+                if (timesinceprevcall > 200) {
+                    drawResultsNow();     
+                } 
+            }
+
+            function drawResultsNow() {
+                //This method is called by all relevant change handlers and always resets the arrays used to draw the circle, 
+                //so there should be no lag causing drawing of circle using previous inputs.
+
+                //form the params for the RPC call.
                 var multiplierVal = slider1.value;
                 var moduloVal = slider2.value;
                 var radiusVal = slider3.value;
+                var rpcval = document.querySelector("input[name=rpctype]:checked").id;
+
                 var d = new Date();
-                var startTime = d.getTime();
-                //check which methods don't have to be called.
-                var mustCallCreateCoords = true;
-                var mustCallCreateMatrix = true;
+                var starttime = d.getTime();
+
+                lasttimedrawcalled = d.getTime(); // set this value to govern too many remote calls per second.
+                var coordspromise;
+                var matrixpromise;
+                var mustUpdateDrawing;
+                
+                //check which of the two methods have to be called (assume both by default).
+                mustCallCreateCoords = true; // boolean to decide on RPC call
+                mustCallCreateMatrix = true; // ditto
                 if (radiusVal == prevRadius && moduloVal == prevModulo) {          // if these values are unchanged, the pattern circular coords are unchanged.
                     mustCallCreateCoords = false;
                 }
                 if (multiplierVal == prevMultiplier && moduloVal == prevModulo) {  // if these values are unchanged, the multiplication matrix is unchanged.
                     mustCallCreateMatrix = false;
                 }
-                //Call any required methods to prepare for drawing of patterns
+
+                mustUpdateDrawing = mustCallCreateCoords || mustCallCreateMatrix;
+
+                if (!mustUpdateDrawing) { //we don't need to do anything more
+                    return;
+                }
+
+                //Call any required methods to prepare for drawing of patterns and do so using promises.
                 if (mustCallCreateCoords) {
-                    coords = JSON.parse(createCoords(centreX, centreY, radiusVal, moduloVal));
+                    coordspromise = prepareApiCallRtnPromise(multiplierVal, moduloVal, radiusVal, rpcval, "createCoords", starttime);
+                } else {
+                    coordspromise = Promise.resolve(""); // a dummy promise resolved successfully.
                 }
+                    
                 if (mustCallCreateMatrix) {
-                    matrix = JSON.parse(createMatrix(multiplierVal, moduloVal));
+                    matrixpromise = prepareApiCallRtnPromise(multiplierVal, moduloVal, radiusVal, rpcval, "createMatrix", starttime);
+                } else {
+                    matrixpromise = Promise.resolve(""); // a dummy promise resolved successfully.
                 }
-                //do drawing on canvas
-                doDrawOnCanvas(radiusVal);
-                //store current slider values as previous values ready for next time.
-                prevRadius = radiusVal;
-                prevModulo = moduloVal;
-                prevMultiplier = multiplierVal;
-                //Update communication info on screen
-                var duration = d.getTime() - startTime;
-                showStatusInfo(duration, returnStatus);
+
+                //Handle when both promises resolved successfully or when they fail.
+                Promise.all([coordspromise, matrixpromise])
+                    .then(values =>
+                        prepDrawPattern(values, multiplierVal, moduloVal, radiusVal))
+                    .catch(error => {
+                        handleError(error)
+                    });
             }
-            function doDrawOnCanvas(radius) {           //we can call this function to draw circle with current global array settings etc.
-                drawCircle(centreX, centreY, radius);
-                drawPattern();
-            }
-            function createCoords(x0, y0, radius, modulo) {
-                // coordinates will be calculated from the 9 0'clock position as being the start (so we move 180 degrees around the circle by reflecting each point about the centre)
-                var myCoords = [];                        // array to hold circular coordinates;
-                for (var i = 0; i < modulo; i++) {
-                    var x = Math.abs((x0 + radius * Math.cos(2 * Math.PI * i / modulo) - 2 * x0).toFixed(2));  //returns string x coord
-                    var y = Math.abs((y0 + radius * Math.sin(2 * Math.PI * i / modulo) - 2 * y0).toFixed(2));  //returns string y coord
-                    myCoords.push([x, y]);
+
+            //we have retuned with resolved promises. Now update the arrays amd draw the pattern.
+            function prepDrawPattern(resultsarray, thismultiplier, thismodulo, thisradius) {
+                var starttime;
+                var httpstatuscheck = 200;
+                var mustUpdateDrawing;
+
+                //maybe there is no change to anything - so check if anything has changed.
+                mustUpdateDrawing = mustCallCreateCoords || mustCallCreateMatrix;
+                if (!mustUpdateDrawing) {
+                    return;  //nothing to draw.
                 }
+
+                if (httpstatuscheck == 200 && mustCallCreateCoords) {
+                    starttime = resultsarray[0].stime;
+                    httpstatuscheck = updateCoordsArray(resultsarray[0].rsp);
+                }
+
+                if (httpstatuscheck == 200 && mustCallCreateMatrix) {
+                    starttime = resultsarray[1].stime;
+                    httpstatuscheck = updateMatrixArray(resultsarray[1].rsp);
+                }
+
+                if (httpstatuscheck == 200) {
+                    //draw the circle pattern for the current values and then save this as previous settings.
+                    doDrawOnCanvas(thisradius, httpstatuscheck, starttime);
+                    prevMultiplier = thismultiplier;
+                    prevRadius = thisradius;
+                    prevModulo = thismodulo;
+                    cycleForAutoplay();
+                }
+            }
+
+            function updateCoordsArray(xmlHttp) {
                 cumulativeCoordsRPC += 1;
-                return JSON.stringify(myCoords);            // return as a JSON object string
+                coords = getJsonArrayFromXmlOrString(xmlHttp.response);//set the array
+                return Number(xmlHttp.status);                         // check for status 200
             }
-            function createMatrix(multiplier, modulo) {
-                var myMatrix = [];                         // array to hold multiplication results matrix;
-                for (var i = 0; i < modulo; i++) {
-                    var result = (i * multiplier) % modulo;
-                    myMatrix.push([i, result])
-                }
+
+            function updateMatrixArray(xmlHttp) {
                 cumulativeMatrixRPC += 1;
-                return JSON.stringify(myMatrix);           // return as a JSON object string
+                matrix = getJsonArrayFromXmlOrString(xmlHttp.response);//set the array
+                return Number(xmlHttp.status);                         // check for status 200
             }
+            
+            function doDrawOnCanvas(radius, status, starttime) {   //we call this function to draw circle with current global array settings etc.
+                drawHollowCircle(centreX, centreY, radius);
+
+                if (status == 200) {
+                    drawPattern();
+                    //Update communication info on screen
+                    showStatusInfo(status, starttime);
+                }
+            }
+
             function drawPattern() {
+                //avoid pattern being drawn at end of autoplay (return is async after slider is reset).
+                if (coords.length != matrix.length) {
+                    console.log("todo array mismatch") ;
+                    return;
+                }
+
                 ctx.lineWidth = "1";
                 ctx.strokeStyle = "wheat";
                 ctx.beginPath();
@@ -581,55 +717,91 @@
                     }
                 }
                 ctx.closePath();
+                console.log("pattern drawn ");
             }
-            function showStatusInfo(duration, status) {
-                strstatusmsg = "Methods returned in " + duration + " ms. Status " + status;
-                strstatusmsg += ". Total RPCs:" + (cumulativeCoordsRPC + cumulativeMatrixRPC).toString();
+
+            function handleError(err) {
+                strerrormsg = "Error.  Status:" + err.status + " " + err.statusText + " " + err.moreinfo;
+                strerrormsg += ". Please try an alternative cloud service instead."
+                statusmsg.innerHTML = strerrormsg;
+
+                var radius = output3.innerText;
+                drawHollowCircle(centreX, centreY, radius);
+                Stop(); // stop if in autoplay mode
+            }
+
+            function showStatusInfo(status, starttime) {
+                var d = new Date();
+                var duration = d.getTime() - starttime;
+                strstatusmsg = "Returned in " + duration + " ms. Status " + status;
+                strstatusmsg += ". Total RPCs:" + (cumulativeCoordsRPC).toString() + " + " + (cumulativeMatrixRPC).toString();
                 statusmsg.innerHTML = strstatusmsg;
             }
-            function playMultiplierSlider() {
-                //if at end of autoplay range, reset slider and stop.
-                if (multiple >= 100) {
-                    multiple = 0; // we need to set this to zero rather than one as it will be incremented within this method anyway.
-                    Stop();
+
+            //wrapper function to repeat the circle drawing method periodically (only called when the response returned and promises are resolved).
+            function cycleForAutoplay() {
+
+                if (!playingslider) {  //check we are in autoplay mode
+                    return;
                 }
+
+                // Call the playMultiplierSlider method when we reach between 700 ms and 750 ms since last request to draw circle.
+                // However, if previous remote call response was delayed more than 750 ms from the request (usually happens on initial requests),
+                // then display the current (delayed) circle pattern and info message for the exact amount of delay up to a max 2000 ms!
+                var nextcall;
+                var d = new Date();
+                var timesinceprevdraw = d.getTime() - lasttimedrawcalled;
+
+                if (timesinceprevdraw > 750) {
+                    nextcall = Math.min(2000, timesinceprevdraw); //next call between 2000 and 750 ms.
+                } else {
+                    nextcall = Math.max(700, (Math.min(750, 750 - timesinceprevdraw)));
+                }
+                console.log("next call " + nextcall.toString() + " " + d.toTimeString());
+                setTimeout(function () { playMultiplierSlider() }, nextcall);
+            }
+
+            function playMultiplierSlider() {
+
+                if (!playingslider || (multiple > 99)) { //check we are still in autoplay or have reached the end
+                    Stop();
+                    return;
+                }
+
                 multiple += 1;
                 slider1.value = multiple;
                 output1.innerText = multiple;
-                drawResults();
-                if (multiple == 100) {  /*check again if we have reached the end of autoplay.*/
+                drawResultsNow();
+
+                if (multiple > 99) {  /*check again if we have reached the end of autoplay.*/
                     Stop();
                 }
             }
-            function resetControlsToStart() {
-                multiple = 1;
-                slider1.value = multiple;
-                output1.innerText = multiple;
-                output2.innerText = slider2.value;
-                output3.innerText = slider3.value;
-                var radius = output3.innerText;
-                drawCircle(centreX, centreY, radius); //draw an empty circle only.  //todo fade out circle drawing instead!!
-                //fadeOut();
-                radiojs.checked = true; //set this by default.
-            }
+
             function Start() {
-                intervalId = setInterval(playMultiplierSlider, 500); //call this method every 500 ms.
                 toggleBut.removeEventListener("click", Start);
                 toggleBut.addEventListener("click", Stop);
                 toggleBut.value = "Stop";
+
+                playingslider = true;
+                playMultiplierSlider();
             }
+
             function Stop() {
-                if (multiple > 99) {                         //if end of range has been reached, reset slider etc.;
-                    resetControlsToStart();
+                playingslider = false;
+                if (multiple > 99) {        //if end of range has been reached, reset slider etc.
+                    setTimeout(function () { resetControlsToStart(); }, 2000) //wait until async calls have returned and drawn circle.
+                    return;
                 }
-                clearInterval(intervalId);
+
                 toggleBut.removeEventListener("click", Stop);
                 toggleBut.addEventListener("click", Start);
                 toggleBut.value = "Autoplay";
             }
+
             function modifyQueryString() {
                 // get all querys tring params
-                const amp = "&"; //"&amp;"
+                const amp = "&";
                 var qstring = "?";
                 qstring += "multiple=" + output1.value.toString() + amp;
                 qstring += "modulus=" + output2.value.toString() + amp;
@@ -637,6 +809,15 @@
                 qstring += "rpc=" + document.querySelector('input[name="rpctype"]:checked').id;
                 return qstring;
             }
+
+            //parse the xml or JSON string response and return it as a pure JSON array.
+            function getJsonArrayFromXmlOrString(input) {
+                var str = input.substring(input.indexOf("[[") + 1);
+                str = str.substring(0, str.lastIndexOf("]]") + 1);
+                var array = eval('[' + str + ']');
+                return array;
+            }
+
         </script>
 
     </form>
