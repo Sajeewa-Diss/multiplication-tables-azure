@@ -324,16 +324,109 @@ input[type=range] {
         max-width: 800px;
     }
 
+/* #region Base Style for responsive layout */
+div.intro{font-size:1.5em;}
+/* #endregion */
 
 
-/* Extra Small Devices, Phones */ 
-/* @media only screen and (min-width : 480px) {
-} */
-    
-/* Small Devices, Tablets */
-/* @media only screen and (min-width : 768px) {
-} */
+/* #region min-wdith 480 */
 
+  /* mobile landscape */
+  @media all and (min-width: 480px) {
+    .header, .footer{
+        min-width: 98vw;
+        max-width: 98vw;
+    }
+
+    div.intro{
+        /* min-width: 800px; */
+        padding-left: 1rem;
+        max-width: 98vw;
+        left: 0;
+        transform: translateX(0);
+    }
+
+    p.firstpara{
+        margin-top:0;
+    }
+
+    p.lastpara{
+        margin-bottom:0;
+    }
+
+    div.canvaswrap{
+        max-width: 98vw;
+        position: relative;
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+        /* left: 0; */
+        transform: translateX(0);
+    }
+  }
+/* #endregion */
+
+/* #region min-width 768 */
+/* tablet */
+@media only screen and (min-width: 768px) 
+{
+    .header, .footer{
+        min-width: 800px;
+        max-width: 800px;
+    }
+
+    div.intro{
+        /* min-width: 800px; */
+        padding-left: 1rem;
+        font-size:1.5em;
+        left: 0;
+        transform: translateX(0);
+    }
+
+    p.firstpara{
+        margin-top:0;
+    }
+
+    p.lastpara{
+        margin-bottom:0;
+    }
+
+    div.canvaswrap{
+        position: relative;
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+        /* left: 0; */
+        transform: translateX(0);
+    }
+}
+/* #endregion */
+
+
+/* #region Large Devices min width 851 */
+/* @media only screen and (min-width : 1200px) {} */
+@media only screen and (min-width: 851px) 
+{
+    div.intro{
+        min-width: 800px;
+        position: relative;
+        font-size:1em;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    div.controls{
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    div.canvaswrap{
+        position: relative;
+        left: 20%;
+        transform: translate(-5%);
+        padding-bottom: 1rem;
+    }
+}
+/* #endregion */
 
 /* #region wide screen width 1360 plus */
 /* Medium Devices, Desktops */
@@ -365,89 +458,5 @@ input[type=range] {
 }
 /* #endregion */
 
-/* #region Large Devices up to 1359 */
-/* @media only screen and (min-width : 1200px) {} */
-@media only screen and (max-width: 1359px) 
-{
-    div.intro{
-        min-width: 800px;
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    div.controls{
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    div.canvaswrap{
-        position: relative;
-        left: 20%;
-        transform: translate(-5%);
-        padding-bottom: 1rem;
-    }
-}
-/* #endregion */
-
-/* #region max-width 850 */
-
-@media only screen and (max-width: 850px) 
-{
-    .header, .footer{
-        min-width: 800px;
-        max-width: 800px;
-    }
-
-    div.intro{
-        /* min-width: 800px; */
-        padding-left: 1rem;
-        left: 0;
-        transform: translateX(0);
-    }
-
-    p.firstpara{
-        margin-top:0;
-    }
-
-    p.lastpara{
-        margin-bottom:0;
-    }
-
-    div.canvaswrap{
-        position: relative;
-        padding-left: 1rem;
-        padding-bottom: 1rem;
-        /* left: 0; */
-        transform: translateX(0);
-    }
-}
-/* #endregion */
-
-/* mobile/base */
-html, body {
-
-  }
-  
-  /* mobile landscape */
-  @media all and (min-width: 480px) {
-
-  }
-  
-  /* tablet */
-  @media all and (min-width: 768px) {
-
-  }
-  
-  /* desktop */
-  @media all and (min-width: 1024px) {
-
-  }
-  
-  /* desktop wide */
-  @media all and (min-width: 1200px) {
-
-  }
   
 
