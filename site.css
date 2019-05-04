@@ -356,14 +356,14 @@ div.intro{
   /* mobile landscape */
   @media all and (min-width: 480px) {
     .header, .footer{
-        min-width: 98vw;
-        max-width: 98vw;
+        min-width: 95vw;
+        max-width: 95vw;
     }
 
     div.intro{
         /* min-width: 800px; */
         /* padding-left: 1rem; */
-        /* max-width: 98vw; */
+        max-width: 95vw;
         /* left: 0; */
         transform: translateX(0);
     }
@@ -392,13 +392,14 @@ div.intro{
 @media only screen and (min-width: 768px) 
 {
     .header, .footer{
-        min-width: 95%;
-        max-width: 95%;
+        min-width: 95vw;
+        max-width: 95vw;
     }
 
     div.intro{
         /* min-width: 800px; */
-        padding-left: 1rem;
+        max-width: 95%;
+        padding-left: 1em;
         /* font-size:1.5em; */
         /* left: 0; */
         /* transform: translateX(0); */
