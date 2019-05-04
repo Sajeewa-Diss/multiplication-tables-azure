@@ -432,41 +432,6 @@ div.intro{
 /* #endregion */
 
 
-/* #region min width 1200px */
-@media only screen and (min-width : 1150px) {
-    
-    .wrapper {
-        display: grid;
-        grid-template-columns: 550px auto;
-        grid-gap: 10px;
-        /*justify-content: center;
-        align-items: center; */
-        padding: 10px 0,}
-    
-        .wrapper > .intro {
-                grid-column: 2;
-                grid-row: 1;
-            }
-
-        .wrapper > .canvaswrap {
-            /* display:inline-block; */
-            /* position:relative; */
-            left:1vw;
-            margin-right: 2rem;
-            /* transform: translateX(0); */
-            /* justify-content: left; */
-            grid-column: 1;
-            grid-row: 1/3;
-        }
-
-        .wrapper > .controls {
-            grid-column: 2;
-            grid-row: 2;
-          }
-
-}
-/* #endregion */
-
 /* #region wide screen width 1360 plus */
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 1360px) {
