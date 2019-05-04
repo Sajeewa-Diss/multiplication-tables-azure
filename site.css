@@ -343,13 +343,14 @@ input[type=range] {
 
 /* #region Base Style for responsive layout. Note this page grid layout is not designed for mobile display. */
 div.intro{
-    min-width:600px;
+    min-width:700px;
     font-size:1.5em;
+    padding-left: 1em;
     transform: translateX(0);
 }
 
 .header, .footer{
-    min-width:600px;
+    min-width:700px;
 }
 
 p.firstpara{
@@ -374,7 +375,7 @@ p.lastpara{
     div.intro{
         /* min-width: 800px; */
         max-width: 100%;
-        padding-left: 1em;
+
         /* font-size:1.5em; */
         /* left: 0; */
         /* transform: translateX(0); */
