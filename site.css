@@ -37,7 +37,6 @@ body {
         font-size:1rem;
     }
 
-
     div.wrapper {
         padding-bottom: 3rem;    /* Footer height */
       }
@@ -61,7 +60,7 @@ body {
     grid-template-columns: 5fr 1fr 15fr;
     grid-auto-rows: 80px;
     /* max-width: 800px; */
-    max-width:96vw;
+    /* max-width:96vw; */
     font-size: 0.8rem;
     color: black;
 }
@@ -330,75 +329,51 @@ input[type=range] {
         font-size: 0.9em;
         top:528px;
         left:100px;
-        max-width: 650px;
+        max-width: 600px;
     }
 
     div.controls{
-        min-width: 95vw;
-        max-width: 95vw;
-        pad-left:1em;
+        /* min-width: 95vw;
+        max-width: 95vw; */
+        padding-left:1em;
         /* position: relative; */
         /* left: 50%;
         transform: translateX(-48%); */
     }
 
-/* #region Base Style for responsive layout */
+/* #region Base Style for responsive layout. Note this page grid layout is not designed for mobile display. */
 div.intro{
-    min-width:95vw;
-    max-width:95vw;
+    min-width:600px;
     font-size:1.5em;
+    transform: translateX(0);
 }
+
+.header, .footer{
+    min-width:600px;
+}
+
+p.firstpara{
+    margin-top:0;
+}
+
+p.lastpara{
+    margin-bottom:0;
+}
+
 /* #endregion */
 
-
-/* #region min-width 480 */
-
-  /* mobile landscape */
-  @media all and (min-width: 480px) {
-    .header, .footer{
-        min-width: 95vw;
-        max-width: 95vw;
-    }
-
-    div.intro{
-        /* min-width: 800px; */
-        /* padding-left: 1rem; */
-        max-width: 95vw;
-        /* left: 0; */
-        transform: translateX(0);
-    }
-
-    p.firstpara{
-        margin-top:0;
-    }
-
-    p.lastpara{
-        margin-bottom:0;
-    }
-
-    /* div.canvaswrap{ */
-        /* max-width: 98vw; */
-        /* position: relative;
-        padding-left: 1rem;
-        padding-bottom: 1rem; */
-        /* left: 0; */
-        /* transform: translateX(0); */
-    /* } */
-  }
-/* #endregion */
 
 /* #region min-width 768 */
 /* tablet */
 @media only screen and (min-width: 768px) 
 {
     .header, .footer{
-        min-width: 95vw;
-        max-width: 95vw;
+        min-width: 100%;
     }
 
     div.intro{
         /* min-width: 800px; */
-        max-width: 95%;
+        max-width: 100%;
         padding-left: 1em;
         /* font-size:1.5em; */
         /* left: 0; */
