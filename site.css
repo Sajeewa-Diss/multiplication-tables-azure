@@ -346,7 +346,7 @@ div.intro{
     min-width:700px;
     font-size:1.5em;
     padding-left: 1em;
-    transform: translateX(0);
+    transform: translate(0, 0);
 }
 
 .header, .footer{
@@ -410,7 +410,7 @@ p.lastpara{
         position: relative;
         font-size:1em;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, 0);
     }
 
     div.controls{
@@ -418,13 +418,13 @@ p.lastpara{
         max-width: 800px;
         position: relative;
         left: 50%;
-        transform: translateX(-48%);
+        transform: translate(-48%, 0);
     }
 
     div.canvaswrap{
         position: relative;
         left: 40%;
-        transform: translate(-20vw);
+        transform: translate(-20vw, 0);
         padding-bottom: 1rem;
     }
 }
@@ -439,13 +439,18 @@ p.lastpara{
         display: grid;
         grid-template-columns: 550px auto;
         grid-gap: 10px;
-        /*justify-content: center;
-        align-items: center; */
+        justify-content:center;
+        align-items:left;
         padding: 10px 0,}
     
         .wrapper > .intro {
                 grid-column: 2;
                 grid-row: 1;
+                /* justify-content:center; */
+                left: 0;
+                transform: translate(0, 0);
+                /* align-items:left; */
+                /* left */
             }
 
         .wrapper > .canvaswrap {
@@ -453,7 +458,7 @@ p.lastpara{
             /* position:relative; */
             left:3vw;
             margin-right: 2rem;
-            /* transform: translateX(0); */
+            transform: translate(-10%, 0);
             /* justify-content: left; */
             grid-column: 1;
             grid-row: 1/3;
@@ -462,17 +467,18 @@ p.lastpara{
         .wrapper > .controls {
             grid-column: 2;
             grid-row: 2;
+            left: 0;
+            transform: translate(0, 0);
           }
 
         div.canvaswrap{
             position: relative;
-            left: 10%;
+            left: 5%;
             transform: translate(-5%);
             padding-bottom: 1rem;
         }
 
         div.canvaswrap > p {
-            /* position:absolute; */
             font-size: 1em;
             left:50px;
         }
