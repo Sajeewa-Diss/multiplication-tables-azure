@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Modulo Multiplication Circle JS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="site.css" />
+</head>
+<body onLoad="JavaScript:setOnRefresh();">
+    <form action="#" method="post"> <!--todo this form is not required and has no effect. It is simply here because this page is inherited from a common code base with a similar page that does require it.-->
+    <div id="page-container">
+        <header class="header">
+            <img src="logo.png" alt="lab logo" class="logo">
+            <h1>Modulo Multiplication Circle in JavaScript</h1>
+            <p>Geometric patterns formed by multiplication in modulo n, joining points along the circumference of a circle.</p>
+        </header>
+        <div class="wrapper">
+            <div class="intro">
+                <section id="textcontent">
+                    <p class="firstpara">
+                        When enumerating the multiplication times tables as lines in a circle, strange and beautiful patterns are formed.
+                        For this exercise, we divide a circle's diameter into equi-distant points with the 9 o'clock position representing zero (by convention), and each point clockwise being a unit increment.
+                        For any times table, the result is expressed as a series of lines joining each factor to its product. When we come full circle, we can continue the multiplication
+                        by re-using the points via modulo division. A full explanation of this idea is cited in the YouTube link below.
+                    </p>
+                    <p>
+                        This page is created in HTML using <strong>inline CSS and JavaScript only</strong> (no external CDNs, libraries or resources are used).
+                        The patterns are drawn on a canvas element, and the page includes two simple grid displays for layout and controls.
+                    </p>
+                    <p class="lastpara">
+                        <span><a href="https://github.com/Sajeewa-Dissa/multiplication-tables-js" target="_blank">GitHub</a> the source code for this project is available here.</span><br />
+                        <span><a href="https://sajeewa-dissa.github.io/multiplication-tables-azure/index.html">Azure</a> the same functionality found here, but the script calls Azure Functions and Azure Cloud Services.</span><br />
+                        <span><a href="https://www.youtube.com/watch?v=qhbuKbxJsk8" target="_blank">YouTube Mathologer</a> the linked YouTube video was the inspiration for this webpage.</span><br />
+                    </p>
+                </section>
+            </div>
+            <div class="canvaswrap">
+                    <canvas id="canvas" width="550" height="550">Your browser doesn't support the canvas element</canvas>
+            </div>
+            <div class="controls">
+                <div>
+                    <label class="subheading">Settings:</label>
+                </div>
+                <div class="buttoncontainer">
+                    <input type="button" id="toggleBut" class="blueButton" value="Autoplay" />
+                </div>
+                <div id="controlgrid">
+                    <div>
+                        <p>Multiply by (1 to 100):</p>
+                    </div>
+                    <div>
+                        <p><output id="multiplierOut" class="spanOutput"></output></p>
+                    </div>
+                    <div class="slidecontainer">
+                        <input type="range" min="1" max="100" value="1" class="slider" id="myRange1"> <!--initial value 1-->
+                    </div>
+                    <div>
+                        <p>Modulo n (1 to 200):</p>
+                    </div>
+                    <div>
+                        <p><output id="moduloOut" class="spanOutput"></output></p>
+                    </div>
+                    <div class="slidecontainer">
+                        <input type="range" min="1" max="200" value="200" class="slider" id="myRange2"> <!--initial value 200-->
+                    </div>
+                    <div>
+                        <p>Radius (100 to 250):</p>
+                    </div>
+                    <div>
+                        <p><output id="radiusOut" class="spanOutput"></output></p>
+                    </div>
+                    <div class="slidecontainer">
+                        <input type="range" min="100" max="250" value="250" class="slider" id="myRange3"> <!--initial value 250-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>&#169;<small> Copyright 2019 Sajeewa Dissanayake</small></p>
+        </div>
+
+        <script>
+            //set DOM references for HTML elements
+            //var statusmsg = document.getElementById("msg");
+            var ctx = document.getElementById("canvas").getContext("2d");
+            //var alpha = 1.0;                                              //transparency variable for canvas
+            var slider1 = document.getElementById("myRange1");
+            var slider2 = document.getElementById("myRange2");
+            var slider3 = document.getElementById("myRange3");
+            var output1 = document.getElementById("multiplierOut");
+            var output2 = document.getElementById("moduloOut");
+            var output3 = document.getElementById("radiusOut");
+
+            //define circle centre, radius and other initial values
+            const centreX = 275;
+            const centreY = 275;
+            var coords = [];
+            var matrix = [];
+            var multiple = 1;
+            var cumulativeCoordsRPC = 0
+            var cumulativeMatrixRPC = 0
+            var prevModulo = 0;
+            var prevRadius = 0;
+            var prevMultiplier = 0;
+
+            output1.innerText = slider1.value;
+            output2.innerText = slider2.value;
+            output3.innerText = slider3.value;
+
+            var initialRadius = slider3.value;
+
+            var toggleBut = document.getElementById("toggleBut");
+            var intervalId;
+            toggleBut.addEventListener("click", Start);
+
+            // event handlers for sliders.
+            slider1.oninput = function () { handleSliderUpdate(this, output1); }
+            slider2.oninput = function () { handleSliderUpdate(this, output2); }
+            slider3.oninput = function () { handleSliderUpdate(this, output3); }
+            slider1.onchange = function () { handleSliderUpdate(this, output1); }
+            slider2.onchange = function () { handleSliderUpdate(this, output2); }
+            slider3.onchange = function () { handleSliderUpdate(this, output3); }
+
+            //draw circle with initial values
+            drawHollowCircle(centreX, centreY, initialRadius);  // this is the entry point for our code. All other code is triggered by user event handlers.
+
+            function drawHollowCircle(x0, y0, radius) {
+                ctx.lineWidth = "1";
+                ctx.strokeStyle = "lightgrey";
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.arc(x0, y0, radius, 0, Math.PI * 2, true); // 2 Pi radians is a complete circle (note drawing arc starts from 3 o'clock position but this isn't an issue)
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            //reset slider and circle on page refresh
+            function setOnRefresh() {
+                resetControlsToStart();
+            }
+
+            function resetControlsToStart() {
+                toggleBut.removeEventListener("click", Stop);
+                toggleBut.addEventListener("click", Start);
+                toggleBut.value = "Autoplay";
+                multiple = 1;
+                slider1.value = multiple;
+                output1.innerText = multiple;
+                output2.innerText = slider2.value;
+                output3.innerText = slider3.value;
+                var radius = output3.innerText;
+                drawHollowCircle(centreX, centreY, radius); //draw an empty circle only.  //todo fade out circle drawing instead (or display 100 for a while)!!
+                //fadeOut();
+            }
+
+            function handleSliderUpdate(slider, control) {
+                if (slider.id == "myRange1") {             // if multiplier is being changed
+                    multiple = Number(slider.value);       // save this global variable for autoplay restart.
+                }
+                control.innerText = slider.value;
+                drawResults();
+            }
+
+            function drawResults() {
+                var multiplierVal = slider1.value;
+                var moduloVal = slider2.value;
+                var radiusVal = slider3.value;
+
+                //check which methods don't have to be called.
+                var mustCallCreateCoords = true;
+                var mustCallCreateMatrix = true;
+
+                if (radiusVal == prevRadius && moduloVal == prevModulo) {          // if these values are unchanged, the pattern circular coords are unchanged.
+                    mustCallCreateCoords = false;
+                }
+                if (multiplierVal == prevMultiplier && moduloVal == prevModulo) {  // if these values are unchanged, the multiplication matrix is unchanged.
+                    mustCallCreateMatrix = false;
+                }
+
+                //Call any required methods to prepare for drawing of patterns
+                if (mustCallCreateCoords) {
+                    createCoords(centreX, centreY, radiusVal, moduloVal);
+                }
+
+                if (mustCallCreateMatrix) {
+                    createMatrix(multiplierVal, moduloVal);
+                }
+
+                if (mustCallCreateCoords || mustCallCreateMatrix) {
+                    //do drawing on canvas
+                    doDrawOnCanvas(radiusVal);
+
+                    //store current slider values as previous values ready for next time.
+                    prevRadius = radiusVal;
+                    prevModulo = moduloVal;
+                    prevMultiplier = multiplierVal;
+                }
+            }
+
+            function doDrawOnCanvas(radius) {           //we can call this function to draw circle with current global array settings etc.
+                drawHollowCircle(centreX, centreY, radius);
+                drawPattern();
+            }
+
+            function createCoords(x0, y0, radius, modulo) {
+                // coordinates will be calculated from the 9 0'clock position as being the start (so we move 180 degrees around the circle by reflecting each point about the centre)
+                coords = [];                        // reset array to hold circular coordinates;
+                for (var i = 0; i < modulo; i++) {
+                    var x = Math.abs((x0 + radius * Math.cos(2 * Math.PI * i / modulo) - 2 * x0).toFixed(2)); //returns string x coord
+                    var y = Math.abs((y0 + radius * Math.sin(2 * Math.PI * i / modulo) - 2 * y0).toFixed(2)); //returns string y coord
+                    coords.push([x, y]);
+                }
+            }
+
+            function createMatrix(multiplier, modulo) {
+                matrix = [];                         // reset array to hold multiplication matrix matrix;
+                for (var i = 0; i < modulo; i++) {
+                    var result = (i * multiplier) % modulo;
+                    matrix.push([i, result])
+                }
+            }
+
+            function drawPattern() {
+                ctx.lineWidth = "1";
+                ctx.strokeStyle = "aquamarine";
+
+                ctx.beginPath();
+                for (var i = 0; i < matrix.length; i++) {
+                    var startX = coords[matrix[i][0]][0];
+                    var startY = coords[matrix[i][0]][1];
+                    var endX = coords[matrix[i][1]][0];
+                    var endY = coords[matrix[i][1]][1];
+
+                    addLineSubPath(ctx, startX, startY, endX, endY);
+
+                    function addLineSubPath(ctx, sX, sY, eX, eY) {
+                        ctx.moveTo(sX, sY);
+                        ctx.lineTo(eX, eY);
+                        ctx.stroke();
+                    }
+                }
+                ctx.closePath();
+            }
+
+            //TODO allow a fadeout animation effect where the pattern is removed
+            //function fadeOut() {
+
+            //    //make sure alpha is to 2 dp.
+            //    //alpha = parseFloat(Math.round(alpha * 100) / 100).toFixed(2);
+            //    counter += 1;
+            //    statusmsg.innerHTML = counter.toString() + " " + alpha.toString();
+
+            //    if (alpha <= 0) {
+            //        statusmsg.innerHTML += "returned";
+            //        return;
+            //    }
+
+            //    requestAnimationFrame(fadeOut);   //call this function recursively to animate the fadeout!!
+            //    ctx.globalAlpha = alpha;
+            //    doDrawOnCanvas(250);
+            //    alpha += -0.01;
+            //}
+
+            function playMultiplierSlider() {
+                //if at end of autoplay range, stop (will reset slider).
+                if (multiple >= 100) {
+                    Stop();
+                    return;
+                }
+
+                multiple += 1;
+                slider1.value = multiple;
+                output1.innerText = multiple;
+                drawResults();
+
+                if (multiple == 100) {  /*check again if we have reached the end of autoplay.*/
+                    Stop();
+                }
+            }
+
+            function Start() {
+                intervalId = setInterval(playMultiplierSlider, 750); //call this method every 750 ms.
+                toggleBut.removeEventListener("click", Start);
+                toggleBut.addEventListener("click", Stop);
+                toggleBut.value = "Stop";
+            }
+
+            function Stop() {
+                clearInterval(intervalId);
+
+                if (multiple > 99) {        //if end of range has been reached, reset slider etc.
+                    setTimeout(function () { resetControlsToStart(); }, 1000)
+                    return;
+                }
+
+                toggleBut.removeEventListener("click", Stop);
+                toggleBut.addEventListener("click", Start);
+                toggleBut.value = "Autoplay";
+            }
+
+        </script>
+    </div>
+    </form>
+</body>
+</html>
